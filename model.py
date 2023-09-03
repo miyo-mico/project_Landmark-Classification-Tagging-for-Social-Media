@@ -1,50 +1,60 @@
 import torch
 import torch.nn as nn
 
-
+# mentor recommendation: https://knowledge.udacity.com/questions/916489
 # define the CNN architecture
 class MyModel(nn.Module):
     def __init__(self, num_classes: int = 1000, dropout: float = 0.7) -> None:
 
         super().__init__()
         self.model = nn.Sequential(
-            nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1), # Output: (16, 224, 224),
+            # First conv + maxpool + relu (3x224x224)
+            nn.Conv2d(3, 64, 3, padding=1),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2), # Output: (16, 112, 112)
-            
-            nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1), # Output: (32, 112, 112)
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2), # Output: (32, 56, 56)
-            
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1), # Output: (64, 56, 56)
             nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2), # Output: (64, 28, 28),
-            
-            nn.Conv2d(64, 128, 3, padding=1), # Output: (128, 28, 28)
-            nn.BatchNorm2d(128),
-            nn.MaxPool2d(2,2), # Output: (128, 14, 14)
-            nn.ReLU(),
-            
-            nn.Conv2d(128, 256, 3, padding=1), # Output: (256, 14, 14)
-            nn.BatchNorm2d(256),
-            nn.MaxPool2d(2,2), # Output: (256, 7, 7)
-            nn.ReLU(),
-            
-            nn.Flatten(),
-        
-            nn.Linear(256*7*7, 3000),
-            nn.BatchNorm1d(3000),
-            nn.ReLU(),
-            
-            nn.Linear(3000, 1000),
-            nn.BatchNorm1d(1000),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
+            nn.MaxPool2d(2, 2),
 
-            nn.Linear(in_features=1000, out_features=num_classes)
-        )
+            
+            # Second conv + maxpool + relu (16x112X112)
+            nn.Conv2d(64, 128, 3, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(128),
+            nn.MaxPool2d(2, 2),
+            
+            # Third conv + maxpool + relu (32x56x56)
+            nn.Conv2d(128, 256, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+            nn.Dropout2d(0.2),
+            
+             
+            # Fourth conv + maxpool + relu (64x28x28)
+            nn.Conv2d(256, 512, 3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(512, 512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(dropout),
+            nn.Conv2d(512, 512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(512, 512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(0.2),
+            
+            # Flatten feature maps (128x14x14)
+            nn.Flatten(),
+            
+            # Fully connected layers. This assumes that the input image was 28x28
+            nn.Linear(512*7*7, 256),
+            
+            nn.ReLU(),
+            
+            
+            nn.Dropout(p=dropout),
+            
+            nn.Linear(256, num_classes)
+    )
 
         # YOUR CODE HERE
         # Define a CNN architecture. Remember to use the variable num_classes
