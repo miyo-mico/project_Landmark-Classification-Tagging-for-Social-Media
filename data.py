@@ -8,9 +8,9 @@ import multiprocessing
 from .helpers import compute_mean_and_std, get_data_location
 import matplotlib.pyplot as plt
 
-
+#int = -1 ,limit: int = -1
 def get_data_loaders(
-    batch_size: int = 32, valid_size: float = 0.2, num_workers: int = -1, limit: int = -1
+    batch_size: int = 32, valid_size: float = 0.2, num_workers: int=0, limit: int = -1
 ):
     """
     Create and returns the train_one_epoch, validation and test data loaders.
@@ -47,35 +47,28 @@ def get_data_loaders(
     # appropriate transforms for that step
     resize, crop = 256, 224
     data_transforms = {
-        "train": transforms.Compose(
+        
             # YOUR CODE HERE
-            [
-            transforms.Resize(resize),
-            transforms.CenterCrop(crop),
-            transforms.RandomHorizontalFlip(p=0.5),
+            "train": transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.RandAugment(num_ops=2,magnitude=5,interpolation=transforms.InterpolationMode.BILINEAR),
+            transforms.RandomHorizontalFlip(0.5),
             transforms.RandomPerspective(p=0.2),
-            transforms.RandAugment(
-                num_ops=2,
-                magnitude=5,
-                interpolation=transforms.InterpolationMode.BILINEAR
-            ),
             transforms.ToTensor(),
-            transforms.Normalize(mean, std)]
+            transforms.Normalize(mean=mean, std=std)]
         ),
-        "valid": transforms.Compose(
-            [
-            transforms.Resize(resize),
-            transforms.CenterCrop(crop),
+        "valid": transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
             transforms.ToTensor(),
-            transforms.Normalize(mean, std)]
-            # YOUR CODE HERE
+            transforms.Normalize(mean=mean, std=std)]
         ),
-        "test": transforms.Compose(
-            [
-            transforms.Resize(resize),
-            transforms.CenterCrop(crop),
+        "test": transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
             transforms.ToTensor(),
-            transforms.Normalize(mean, std)]
+            transforms.Normalize(mean=mean, std=std)]
         ),
     }
             # YOUR CODE HERE
@@ -117,37 +110,65 @@ def get_data_loaders(
         sampler=train_sampler,
         num_workers=num_workers,
     )
+    #data_loaders["valid"] = torch.utils.data.DataLoader(
+    #    valid_data,
+    #    batch_size=batch_size,
+    #    sampler=valid_sampler,
+    #    num_workers=num_workers,
+    #    shuffle=False)
+    #    # YOUR CODE HERE
+   
+
+   
     data_loaders["valid"] = torch.utils.data.DataLoader(
         valid_data,
         batch_size=batch_size,
         sampler=valid_sampler,
-        num_workers=num_workers,
-        shuffle=False)
-        # YOUR CODE HERE
-    
-
-    # Now create the test data loader
-    test_data = datasets.ImageFolder(
-        base_path / "test",
-        # YOUR CODE HERE (add the test transform)
-        transform = data_transforms["test"]
+        num_workers=0,
+        shuffle=False
     )
-  
-
+    # Now create the test data loader
+    test_data = datasets.ImageFolder(base_path / "test",transform=data_transforms["test"])
     if limit > 0:
         indices = torch.arange(limit)
         test_sampler = torch.utils.data.SubsetRandomSampler(indices)
     else:
         test_sampler = None
-
     data_loaders["test"] = torch.utils.data.DataLoader(
-        # YOUR CODE HERE (remember to add shuffle=False as well)
+        # shuffle=False is the default setting, but will proforma be set
         test_data,
         batch_size=batch_size,
-        sampler=test_sampler,
-        num_workers=num_workers,
-        shuffle=False
+        shuffle=False,
+        num_workers=0
     )
+
+
+
+
+
+
+# # Now create the test data loader
+# test_data = datasets.ImageFolder(
+#     base_path / "test",
+#     # YOUR CODE HERE (add the test transform)
+#     transform = data_transforms["test"]
+# )
+#
+
+# if limit > 0:
+#     indices = torch.arange(limit)
+#     test_sampler = torch.utils.data.SubsetRandomSampler(indices)
+# else:
+#     test_sampler = None
+
+# data_loaders["test"] = torch.utils.data.DataLoader(
+#     # YOUR CODE HERE (remember to add shuffle=False as well)
+#     test_data,
+#     batch_size=batch_size,
+#     sampler=test_sampler,
+#     num_workers=num_workers,
+#     shuffle=False
+# )
 
 
     return data_loaders
