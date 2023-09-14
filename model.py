@@ -1,3 +1,6 @@
+#!/home/esfnc/udacity_hilal/venv/bin/python
+# coding: utf-8
+
 import torch
 import torch.nn as nn
 
@@ -24,8 +27,9 @@ class MyModel(nn.Module):
             # Third conv + maxpool + relu (32x56x56)
             nn.Conv2d(128, 256, 3, padding=1),
             nn.ReLU(),
+            nn.BatchNorm2d(256),
             nn.MaxPool2d(2, 2),
-            nn.Dropout2d(0.2),
+            #nn.Dropout2d(0.2),
             
              
             # Fourth conv + maxpool + relu (64x28x28)
@@ -34,13 +38,13 @@ class MyModel(nn.Module):
             nn.Conv2d(512, 512, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Dropout(dropout),
+            #nn.Dropout(dropout),
             nn.Conv2d(512, 512, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.Conv2d(512, 512, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Dropout(0.2),
+            #nn.Dropout(0.2),
             
             # Flatten feature maps (128x14x14)
             nn.Flatten(),
@@ -51,7 +55,7 @@ class MyModel(nn.Module):
             nn.ReLU(),
             
             
-            nn.Dropout(p=dropout),
+            nn.Dropout(p=0.2),
             
             nn.Linear(256, num_classes)
     )
